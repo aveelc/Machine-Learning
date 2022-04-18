@@ -1,0 +1,42 @@
+image: continuumio/anaconda3:2021.05
+stages:
+  - check-files
+  - lint
+  - run
+
+check-lab-files:
+  tags:
+    - docker
+  stage: check-files
+  script:
+    - test -f .gitignore
+    - test -f .pylintrc
+    - test -f common/describe_data.py
+    - test -f common/test_env.py
+    - test -f lab4.py
+    - test -f README.md
+    - test -f data/TTWO.csv
+    - test -d results
+    - find . -name "*" -not -path "./.git/*" -not -path "./builds/*" 2>&1
+
+lint-lab:
+  tags:
+    - docker
+  stage: lint
+  script:
+    # Check formatting
+    - autopep8 -d --exit-code lab4.py common/*.py
+    # Lint
+    - pylint lab4.py common/*.py
+
+run-lab:
+  tags:
+    - docker
+  stage: run
+  script:
+    - chmod +x lab4.py
+    - ./lab4.py
+  artifacts:
+    name: lab4-results-$CI_COMMIT_SHORT_SHA
+    paths:
+      - results/
